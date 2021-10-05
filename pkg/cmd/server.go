@@ -6,6 +6,9 @@ import (
 	"flag"
 	"fmt"
 
+	// mysql driver
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/devararishivian/go-grpc/pkg/protocol/grpc"
 	v1 "github.com/devararishivian/go-grpc/pkg/service/v1"
 )
