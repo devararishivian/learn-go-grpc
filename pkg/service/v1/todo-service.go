@@ -19,6 +19,7 @@ const (
 // todoServiceServer is implementation of v1.TodoServiceServer proto interface
 type todoServiceServer struct {
 	db *sql.DB
+	v1.UnimplementedTodoServiceServer
 }
 
 func NewTodoServiceServer(db *sql.DB) v1.TodoServiceServer {
