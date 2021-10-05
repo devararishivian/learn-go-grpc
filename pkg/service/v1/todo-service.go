@@ -3,6 +3,8 @@ package v1
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"time"
 
 	v1 "github.com/devararishivian/go-grpc/pkg/api/v1"
 	"github.com/golang/protobuf/ptypes"
@@ -79,5 +81,56 @@ func (s *todoServiceServer) Create(ctx context.Context, req *v1.CreateRequest) (
 	return &v1.CreateResponse{
 		Api: API_VERSION,
 		Id:  id,
+	}, nil
+}
+
+func (s *todoServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1.ReadResponse, error) {
+	// check if the API version requested by client is supported by server
+	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
+	}
+
+	// Get SQL connection from pool
+	c, err := s.connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer c.Close()
+
+	// Query Todo by ID
+	rows, err := c.QueryContext(ctx, "SELECT id, title, description, reminder FROM todo WHERE id = ?", req.Id)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, "failed to select from todo-> "+err.Error())
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, status.Error(codes.Unknown, "failed to retrieve data from todo-> "+err.Error())
+		}
+		return nil, status.Error(codes.NotFound, fmt.Sprintf("Todo with ID='%d' is not found",
+			req.Id))
+	}
+
+	// Get Todo data
+	var td v1.Todo
+	var reminder time.Time
+	if err := rows.Scan(&td.Id, &td.Title, &td.Description, &reminder); err != nil {
+		return nil, status.Error(codes.Unknown, "failed to retrieve field values from Todo row-> "+err.Error())
+	}
+
+	td.Reminder, err = ptypes.TimestampProto(reminder)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, "reminder field has invalid format-> "+err.Error())
+	}
+
+	if rows.Next() {
+		return nil, status.Error(codes.Unknown, fmt.Sprintf("found multiple Todo rows with ID='%d'",
+			req.Id))
+	}
+
+	return &v1.ReadResponse{
+		Api:  API_VERSION,
+		Todo: &td,
 	}, nil
 }
