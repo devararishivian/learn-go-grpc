@@ -28,6 +28,8 @@ type TodoServiceClient interface {
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	// Read all todo tasks
 	ReadAll(ctx context.Context, in *ReadAllRequest, opts ...grpc.CallOption) (*ReadAllResponse, error)
+	// Read todo tasks by title
+	ReadByTitle(ctx context.Context, in *ReadByTitleRequest, opts ...grpc.CallOption) (*ReadByTitleResponse, error)
 }
 
 type todoServiceClient struct {
@@ -83,6 +85,15 @@ func (c *todoServiceClient) ReadAll(ctx context.Context, in *ReadAllRequest, opt
 	return out, nil
 }
 
+func (c *todoServiceClient) ReadByTitle(ctx context.Context, in *ReadByTitleRequest, opts ...grpc.CallOption) (*ReadByTitleResponse, error) {
+	out := new(ReadByTitleResponse)
+	err := c.cc.Invoke(ctx, "/v1.TodoService/ReadByTitle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TodoServiceServer is the server API for TodoService service.
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility
@@ -97,6 +108,8 @@ type TodoServiceServer interface {
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	// Read all todo tasks
 	ReadAll(context.Context, *ReadAllRequest) (*ReadAllResponse, error)
+	// Read todo tasks by title
+	ReadByTitle(context.Context, *ReadByTitleRequest) (*ReadByTitleResponse, error)
 	mustEmbedUnimplementedTodoServiceServer()
 }
 
@@ -118,6 +131,9 @@ func (UnimplementedTodoServiceServer) Delete(context.Context, *DeleteRequest) (*
 }
 func (UnimplementedTodoServiceServer) ReadAll(context.Context, *ReadAllRequest) (*ReadAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadAll not implemented")
+}
+func (UnimplementedTodoServiceServer) ReadByTitle(context.Context, *ReadByTitleRequest) (*ReadByTitleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadByTitle not implemented")
 }
 func (UnimplementedTodoServiceServer) mustEmbedUnimplementedTodoServiceServer() {}
 
@@ -222,6 +238,24 @@ func _TodoService_ReadAll_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TodoService_ReadByTitle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadByTitleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServiceServer).ReadByTitle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.TodoService/ReadByTitle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServiceServer).ReadByTitle(ctx, req.(*ReadByTitleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TodoService_ServiceDesc is the grpc.ServiceDesc for TodoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -248,6 +282,10 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReadAll",
 			Handler:    _TodoService_ReadAll_Handler,
+		},
+		{
+			MethodName: "ReadByTitle",
+			Handler:    _TodoService_ReadByTitle_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
