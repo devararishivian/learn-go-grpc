@@ -258,3 +258,48 @@ func (s *todoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 		Todos: list,
 	}, nil
 }
+
+// Read all todo tasks by title
+func (s *todoServiceServer) ReadByTitle(ctx context.Context, req *v1.ReadByTitleRequest) (*v1.ReadByTitleResponse, error) {
+	// check if the API version requested by client is supported by server
+	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
+	}
+
+	// Get SQL connection from pool
+	c, err := s.connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer c.Close()
+
+	// Get Todo list
+	rows, err := c.QueryContext(ctx, "SELECT id, title, description, reminder FROM todo WHERE title LIKE ?", "%"+req.Title+"%")
+	if err != nil {
+		return nil, status.Error(codes.Unknown, "failed to select from Todo-> "+err.Error())
+	}
+	defer rows.Close()
+
+	var reminder time.Time
+	list := []*v1.Todo{}
+	for rows.Next() {
+		td := new(v1.Todo)
+		if err := rows.Scan(&td.Id, &td.Title, &td.Description, &reminder); err != nil {
+			return nil, status.Error(codes.Unknown, "failed to retrieve field values from Todo row-> "+err.Error())
+		}
+		td.Reminder, err = ptypes.TimestampProto(reminder)
+		if err != nil {
+			return nil, status.Error(codes.Unknown, "reminder field has invalid format-> "+err.Error())
+		}
+		list = append(list, td)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, status.Error(codes.Unknown, "failed to retrieve data from Todo-> "+err.Error())
+	}
+
+	return &v1.ReadByTitleResponse{
+		Api:   API_VERSION,
+		Todos: list,
+	}, nil
+}
