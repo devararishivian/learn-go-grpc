@@ -46,6 +46,22 @@ message ReadResponse {
     Todo todo = 2;
 }
 
+// Request data to read todo task by title
+message ReadByTitleRequest {
+    // API versioning
+    string api = 1;
+
+    string title = 2;
+}
+
+// Contains list of all todo tasks matched
+message ReadByTitleResponse{
+    // API versioning
+    string api = 1;
+
+    repeated Todo todos = 2;
+}
+
 // Request data to update todo task
 message UpdateRequest{
     // API versioning
@@ -114,4 +130,7 @@ service TodoService {
 
     // Read all todo tasks
     rpc ReadAll(ReadAllRequest) returns (ReadAllResponse);
+
+    // Read todo tasks by title
+    rpc ReadByTitle(ReadByTitleRequest) returns (ReadByTitleResponse);
 }
