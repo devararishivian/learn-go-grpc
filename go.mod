@@ -13,7 +13,6 @@ require (
 )
 
 require (
-	github.com/google/go-cmp v0.5.6 // indirect
 	golang.org/x/net v0.0.0-20211005215030-d2e5035098b3 // indirect
 	golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef // indirect
 	golang.org/x/text v0.3.7 // indirect
