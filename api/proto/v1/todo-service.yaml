@@ -3,9 +3,5 @@ config_version: 3
 
 http:
   rules:
-    # - selector: grpc.gateway.examples.internal.proto.examplepb.UnannotatedEchoService.Echo
-    #   post: "/v1/example/echo/{id}"
-    #   additional_bindings:
-    #   - get: "/v1/example/echo/{id}/{num}"
-    - selector: v1.ReadAllResponse
+    - selector: v1.TodoService.ReadAll
       get: /v1/todo
