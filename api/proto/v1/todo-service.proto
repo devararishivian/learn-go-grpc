@@ -4,34 +4,6 @@ package v1;
 option go_package = "./v1";
 
 import "google/protobuf/timestamp.proto";
-import "google/api/annotations.proto";
-import "protoc-gen-swagger/options/annotations.proto";
-
-option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
-	info: {
-		title: "Todo Service";
-		version: "1.0";
-		contact: {
-			name: "go-grpc";
-			url: "https://github.com/devararishivian/go-grpc";
-			email: "rishivian@gmail.com";
-        };
-    };
-    schemes: HTTP;
-    consumes: "application/json";
-    produces: "application/json";
-    responses: {
-		key: "404";
-		value: {
-			description: "Returned when the resource does not exist.";
-			schema: {
-				json_schema: {
-					type: STRING;
-				}
-			}
-		}
-	}
-};
 
 message Todo {
     int64 id = 1;
@@ -157,11 +129,7 @@ service TodoService {
     rpc Delete(DeleteRequest) returns (DeleteResponse);
 
     // Read all todo tasks
-    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse){
-        option (google.api.http) = {
-            get: "/v1/todo/all"
-        };
-    }
+    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse);
 
     // Read todo tasks by title
     rpc ReadByTitle(ReadByTitleRequest) returns (ReadByTitleResponse);
