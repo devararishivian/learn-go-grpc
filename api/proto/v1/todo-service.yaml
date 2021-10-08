@@ -1,0 +1,7 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    - selector: v1.TodoService.ReadAll
+      get: /v1/todo
